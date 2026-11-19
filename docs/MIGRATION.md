@@ -12,13 +12,22 @@
 
 ```sh
 git lfs install
-git clone https://github.com/miracle121388-a11y/daguanyuan.git
+git clone https://github.com/GongshiQiheng/daguanyuan.git
 cd daguanyuan
 git lfs pull --include="" --exclude=""
 git lfs fsck
 ```
 
-已经克隆的成员先 `git pull --ff-only`，再执行 LFS 拉取。当前整库的大文件去重后约 4.43 GB；应使用 Git 克隆并拉取 LFS，不能仅凭 GitHub 的 ZIP 下载判断模型是否齐全。
+已经克隆的成员在项目目录更新远端，再同步 `main` 和 LFS：
+
+```sh
+git remote set-url origin https://github.com/GongshiQiheng/daguanyuan.git
+git switch main
+git pull --ff-only
+git lfs pull
+```
+
+当前整库的大文件去重后约 4.43 GB。完整开发素材需要通过 Git 和 Git LFS 获取。
 
 从旧版仓库更新后，如果素材检查报告 glTF/JSON 的哈希不符，可运行 `npm run materials:check -- --repair-line-endings`。它仅恢复与当前 Git 提交内容一致的 CRLF/LF 差异，保留其他实质编辑；新克隆会直接使用仓库规定的素材字节格式。
 
@@ -84,7 +93,7 @@ npm run materials:pine
 
 ## 5. 多人通过 GitHub 同步
 
-每人使用自己的功能分支，例如 `git switch -c codex/member-materials`。开始工作前先拉取分支更新和 LFS。`.blend` 是二进制文件，同一时间安排一人编辑母场景；可用 Git LFS 锁协调：
+需要提交代码的公司成员由组织管理员授予本仓库的写权限。按 [AGENTS.md](../AGENTS.md) 在 `main` 上开发，开工前先同步最新提交和 LFS。`.blend` 是二进制文件，同一时间安排一人编辑母场景，可用 Git LFS 锁协调：
 
 ```sh
 git lfs lock blender/daguanyuan_master.blend
@@ -97,7 +106,7 @@ git push origin HEAD
 git lfs unlock blender/daguanyuan_master.blend
 ```
 
-新的 `.blend` 会自动使用 LFS。新增大型 GLB、FBX、BIN 等文件时，先按实际路径执行 `git lfs track "assets/source/example/model.glb"`，并把 `.gitattributes` 一起提交。素材编辑完成后更新清单，让其他成员能核对拿到的文件是否一致。合并到 `main` 后，其他人再次 `git pull --ff-only`、`git lfs pull` 即可同步。
+新的 `.blend` 会自动使用 LFS。新增大型 GLB、FBX、BIN 等文件时，先按实际路径执行 `git lfs track "assets/source/example/model.glb"`，并把 `.gitattributes` 一起提交。素材编辑完成后更新清单，让其他成员能核对拿到的文件是否一致。推送到 `main` 后，其他人执行 `git pull --ff-only` 和 `git lfs pull` 即可同步。
 
 日常继续开发应从当前母场景和现有配置出发。`content:prepare`、`pipeline` 和历史一次性迁移命令会重新生成或覆盖对应内容，按需使用；`models:overview-budget` 是旧版迁移入口，当前模型不需要再次执行。
 
